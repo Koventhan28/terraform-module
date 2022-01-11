@@ -9,7 +9,7 @@ module "myvpc" {
 
 module "keypair" {
   source          = "../modules/ssh"
-  public_key_path = "/home/koventhan/.ssh/id_rsa.pub"
+  public_key_path = "~/.ssh/id_rsa.pub"
   keypair_region  = "us-east-2"
 
 }
@@ -49,26 +49,26 @@ resource "aws_eip" "elasticip" {
 }
 
 resource "aws_instance" "meanstack" {
-  ami                         = "ami-002068ed284fb165b"
+  ami                         = "ami-0fb653ca2d3203ac1"
   instance_type               = var.instancesize
   subnet_id                   = module.myvpc.subnet.id
   vpc_security_group_ids      = [module.myvpc.security_group.id]
   associate_public_ip_address = true
   key_name                    = module.keypair.keyname
   tags = {
-    "Name" = "${var.env}-ec2"
+    "Name" = "${var.env}-ubuntu"
   }
 
 user_data = <<EOF
 #!/bin/bash
 sudo su -
-sudo yum update
-sudo yum -y python3-pip
+sudo apt update
+sudo apt -y python3-pip
 sudo pip3 install boto3
 sudo pip3 install botocore
 sudo adduser koventhan 
-sudo echo ”Secret1.0” | passwd –stdin ansible
-echo “koventhan ALL=(ALL)   NOPASSWD:ALL” >> /etc/sudoers
+sudo echo "Secret1.0" | passwd --stdin koventhan
+echo 'koventhan ALL=(ALL)   NOPASSWD:ALL' >> /etc/sudoers
 sudo sed –i ‘/PasswordAuthentication yes/s/^#//’ /etc/ssh/sshd_config
 sudo sed –i “s/PasswordAuthentication no/#PasswordAuthentication no/g” /etc/ssh/sshd_config
 sudo service sshd restart 
@@ -108,5 +108,6 @@ resource "null_resource" "command" {
   */
 
 }
+
 
 

@@ -1,18 +1,13 @@
 ---
-- hosts : tag_Name_Production_ubuntu
+- hosts : 3.128.182.109
   become: yes 
   tasks:
   - name: Enabling the npm repository 
-    shell: curl -sL https://deb.nodesource.com/setup_14.x
-#  - name: logining in as root  
-#    command: sudo su -
-  - name: caching the apt
-    apt:
-      update_cache: yes     
-  - name: installing the packages
-    apt: 
+    shell: curl -sL https://deb.nodesource.com/setup_14.x 
+  - name: Update the apt repository and installing the packages
+    yum: 
+      update_cache: yes
       name: "{{item}}"
-      state: present
     with_items:
       - mongodb
       - nodejs
@@ -20,12 +15,11 @@
       - g++
       - make
       - git
-      - npm
   - name: Start and enable mongodb service 
     service: 
       name: mongodb
-      state: started
-      enabled: yes
+      state: start
+      enable: yes
   - name: Installing yarn and gulp via NPM
     npm:
       name: "{{item}}"
@@ -49,11 +43,11 @@
       var: output.stdout_lines 
   - name: Copying the server.js file 
     template: 
-      src: /opt/Terraform/webserver/server.js.j2
-      dest: /home/ubuntu/mean/server.js
+      src: ./server.js.j2
+      destination: /tmp/mean/server.js
       mode: 744
       owner: ubuntu
       group: ubuntu
   - name: starting the mean service for checking if it works 
-    shell: gulp 
+    shell: gulp &
 ########################################################################################
